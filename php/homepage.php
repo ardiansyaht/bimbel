@@ -38,7 +38,7 @@ try {
   <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
   <link rel="icon" type="image/png" href="../assets/img/favicon.png">
   <title>
-    YODARNIA
+    CodinginAJA
   </title>
   <!--     Fonts and icons     -->
   <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700" />
@@ -67,7 +67,7 @@ try {
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a href="tambah.php" class="btn btn-sm bg-white mb-0 me-1 mt-2 mt-md-0">Daftar</a>
+            <a href="create.php" class="btn btn-sm bg-white mb-0 me-1 mt-2 mt-md-0">Daftar</a>
           </li>
           <!-- <li class="nav-item">
             <a href="#" class="btn btn-sm bg-white mb-0 me-1 mt-2 mt-md-0">Kelola Data</a>

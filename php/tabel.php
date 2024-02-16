@@ -46,7 +46,7 @@ $no = 0;
         <br>
         <h4>
             <center>DAFTAR PESERTA PELATIHAN</center>
-            <a type="btn" class="btn btn-success" href="tambahdata.php">TambahData</a>
+            <a type="btn" class="btn btn-success" href="create.php">TambahData</a>
         </h4>
 
         <table class="my-3 table table-bordered">

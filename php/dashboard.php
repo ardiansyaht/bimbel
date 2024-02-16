@@ -148,10 +148,10 @@ if ($_SESSION['role'] !== 'admin') {
 
         $.ajax({
             type: "POST",
-            url: "../../infinite_loop/php/logout.php", // Gantilah dengan URL yang sesuai
+            url: "logout.php", // Gantilah dengan URL yang sesuai
             success: function(response) {
                 // Redirect ke halaman login setelah logout
-                window.location.href = "../../infinite_loop/php/login_bc.php";
+                window.location.href = "login.php";
             },
             error: function(error) {
                 console.error("Error during logout:", error);

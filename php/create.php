@@ -61,7 +61,7 @@ $conn = null;
     <meta name="description" content="Colorlib Templates">
     <meta name="author" content="Colorlib">
     <meta name="keywords" content="Colorlib Templates">
-    <title>Au Register Forms by Colorlib</title>
+    <title>CodinginAJA</title>
     <link href="../assets/vendor/mdi-font/css/material-design-iconic-font.min.css" rel="stylesheet" media="all">
     <link href="../assets/vendor/font-awesome-4.7/css/font-awesome.min.css" rel="stylesheet" media="all">
     <link href="https://fonts.googleapis.com/css?family=Poppins:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
@@ -173,7 +173,7 @@ $conn = null;
             var subject = document.forms["registrationForm"]["subject"].value;
 
             if (nama == "" || sekolah == "" || gender == "" || email == "" || phone == "" || subject == "") {
-                // Gunakan alert untuk notifikasi sederhana
+
                 alert("Harap isi semua field pada formulir.");
                 return false;
             }
@@ -182,7 +182,6 @@ $conn = null;
         }
     </script>
 
-</body><!-- This templates was made by Colorlib (https://colorlib.com) -->
+</body>
 
 </html>
-<!-- end document-->

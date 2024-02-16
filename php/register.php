@@ -1,5 +1,6 @@
 <?php
 session_start();
+header("X-Frame-Options: DENY");
 
 $host = 'localhost';
 $username = 'root';
@@ -102,17 +103,16 @@ $conn->close();
           <div class="card-body">
             <form role="form" class="text-start" method="post" action="register.php" onsubmit="return validateForm();">
               <div class="mb-3">
-                <input type="text" class="form-control" id="exampleInputUsername" name="username" placeholder="Username">
+                <input type="text" class="form-control" id="exampleInputUsername" name="username" placeholder="Username" required>
               </div>
               <div class="mb-3">
-                <input type="text" class="form-control" id="exampleInputName" name="name" placeholder="Name">
+                <input type="text" class="form-control" id="exampleInputName" name="name" placeholder="Name" required>
               </div>
               <div class="mb-3">
-                <input type="email" class="form-control" id="exampleInputEmail1" name="email" aria-describedby="emailHelp" placeholder="Email">
+                <input type="email" class="form-control" id="exampleInputEmail1" name="email" aria-describedby="emailHelp" placeholder="Email" required>
               </div>
               <div class="mb-3">
-                <input type="password" class="form-control" id="exampleInputPassword1" name="password" placeholder="Password">
-
+                <input type="password" class="form-control" id="exampleInputPassword1" name="password" placeholder="Password" required>
               </div>
               <div class="text-center">
                 <button type="submit" class="btn bg-gradient-primary w-100 my-4 mb-2">Register</button>
@@ -121,12 +121,12 @@ $conn->close();
             <div class="text-center">
               <?php
               if (isset($_SESSION['register_message'])) {
-                echo $_SESSION['register_message'];
+                echo htmlspecialchars($_SESSION['register_message'], ENT_QUOTES, 'UTF-8');
                 unset($_SESSION['register_message']); // Hapus pesan agar tidak tampil lagi
               } else {
                 echo 'Already have an account? <a href="login.php">Sign in</a>';
               }
-              ?></p>
+              ?>
             </div>
 
           </div>

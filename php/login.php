@@ -17,8 +17,8 @@ try {
 
 // Menangani data dari formulir
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  $email = $_POST['email'];
-  $password = $_POST['password'];
+  $email = htmlspecialchars($_POST['email'], ENT_QUOTES, 'UTF-8');
+  $password = htmlspecialchars($_POST['password'], ENT_QUOTES, 'UTF-8');
 
   try {
     // Menggunakan prepared statement untuk query ke database
@@ -134,6 +134,10 @@ $conn = null;
 
             <p class="mt-4 text-sm text-center">
               Don't have an account? <a href="register.php">Register</a></p>
+            </p>
+            <p class="mt-4 text-sm text-center">
+              <a href="forgot_password.php">Forgot Password</a>
+            </p>
             </p>
 
           </div>

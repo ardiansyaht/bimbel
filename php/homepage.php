@@ -69,6 +69,9 @@ $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : '';
           <li class="nav-item">
             <a href="create.php" class="btn btn-sm bg-white mb-0 me-1 mt-2 mt-md-0">Daftar</a>
           </li>
+          <li class="nav-item">
+            <a href="profile_page.php" class="btn btn-sm bg-white mb-0 me-1 mt-2 mt-md-0">Profile</a>
+          </li>
           <?php if ($userRole == 'admin') : ?>
             <li class="nav-item">
               <a href="dashboard.php" class="btn btn-sm bg-white mb-0 me-1 mt-2 mt-md-0">Dashboard</a>
@@ -271,7 +274,7 @@ $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : '';
     <div class="container">
       <div class="row">
         <div class="col-md-6 m-auto">
-          <h4>Be the first to see the news</h4>
+          <!-- <h4>Be the first to see the news</h4>
           <p class="mb-4">
             Your company may not be in the software business,
             but eventually, a software company will be in your business.
@@ -285,15 +288,15 @@ $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : '';
             </div>
             <div class="col-4 ps-0">
               <button type="button" class="btn bg-gradient-info mb-0 h-100 position-relative z-index-2">Subscribe</button>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-5 ms-auto">
-          <div class="position-relative">
-            <img class="max-width-50 w-100 position-relative z-index-2" src="../assets/img/macbook.png" alt="image">
-          </div>
+            </div> -->
         </div>
       </div>
+      <div class="col-md-5 ms-auto">
+        <div class="position-relative">
+          <img class="max-width-50 w-100 position-relative z-index-2" src="../assets/img/macbook.png" alt="image">
+        </div>
+      </div>
+    </div>
     </div>
   </section>
   <!-- -------- END PRE-FOOTER 1 w/ SUBSCRIBE BUTTON AND IMAGE ------- -->

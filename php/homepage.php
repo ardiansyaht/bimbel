@@ -10,6 +10,7 @@ if (!isset($_SESSION['session_email'])) {
   exit();
 }
 
+
 $host = 'localhost';
 $username = 'root';
 $password = '';
@@ -22,10 +23,9 @@ try {
 } catch (PDOException $e) {
   die("Koneksi ke database gagal: " . $e->getMessage());
 }
+
+$userRole = isset($_SESSION['role']) ? $_SESSION['role'] : '';
 ?>
-
-
-
 
 
 
@@ -69,9 +69,11 @@ try {
           <li class="nav-item">
             <a href="create.php" class="btn btn-sm bg-white mb-0 me-1 mt-2 mt-md-0">Daftar</a>
           </li>
-          <!-- <li class="nav-item">
-            <a href="#" class="btn btn-sm bg-white mb-0 me-1 mt-2 mt-md-0">Kelola Data</a>
-          </li> -->
+          <?php if ($userRole == 'admin') : ?>
+            <li class="nav-item">
+              <a href="dashboard.php" class="btn btn-sm bg-white mb-0 me-1 mt-2 mt-md-0">Dashboard</a>
+            </li>
+          <?php endif; ?>
           <li class="nav-item">
             <a href="#" class="btn btn-sm bg-white mb-0 me-1 mt-2 mt-md-0" onclick="logout()">Log Out</a>
           </li>

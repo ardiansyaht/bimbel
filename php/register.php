@@ -21,13 +21,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $email = $_POST['email'];
   $password = $_POST['password'];
 
-  // Validasi apakah username dan email sudah digunakan
-  $checkQuery = "SELECT * FROM tb_login WHERE username = '$username' OR email = '$email'";
-  $checkResult = $conn->query($checkQuery);
+  // Validasi apakah username sudah digunakan
+  $checkUsernameQuery = "SELECT * FROM tb_login WHERE username = '$username'";
+  $checkUsernameResult = $conn->query($checkUsernameQuery);
 
-  if ($checkResult->num_rows > 0) {
-    // Jika username atau email sudah digunakan
-    $_SESSION['register_message'] = 'Username atau email sudah digunakan. Silakan gunakan yang lain.';
+  // Validasi apakah email sudah digunakan
+  $checkEmailQuery = "SELECT * FROM tb_login WHERE email = '$email'";
+  $checkEmailResult = $conn->query($checkEmailQuery);
+
+  if ($checkUsernameResult->num_rows > 0) {
+    $_SESSION['register_message'] = 'Username sudah digunakan. Silakan gunakan yang lain.';
+  } elseif ($checkEmailResult->num_rows > 0) {
+    $_SESSION['register_message'] = 'Email sudah digunakan. Silakan gunakan yang lain.';
   } else {
     // Enkripsi password menggunakan bcrypt
     $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
@@ -95,7 +100,7 @@ $conn->close();
       <div class="col-lg-4 col-md-8 col-12 mx-auto">
         <div class="card z-index-0 fadeIn3 fadeInBottom">
           <div class="card-body">
-            <form role="form" class="text-start" method="post" action="register.php">
+            <form role="form" class="text-start" method="post" action="register.php" onsubmit="return validateForm();">
               <div class="mb-3">
                 <input type="text" class="form-control" id="exampleInputUsername" name="username" placeholder="Username">
               </div>
@@ -107,14 +112,21 @@ $conn->close();
               </div>
               <div class="mb-3">
                 <input type="password" class="form-control" id="exampleInputPassword1" name="password" placeholder="Password">
+
               </div>
               <div class="text-center">
                 <button type="submit" class="btn bg-gradient-primary w-100 my-4 mb-2">Register</button>
               </div>
             </form>
             <div class="text-center">
-              <p class="mt-3 mb-0">Forgot Password?</p>
-              <p class="mt-3 mb-0">Already have an account? <a href="login.php">Sign in</a></p>
+              <?php
+              if (isset($_SESSION['register_message'])) {
+                echo $_SESSION['register_message'];
+                unset($_SESSION['register_message']); // Hapus pesan agar tidak tampil lagi
+              } else {
+                echo 'Already have an account? <a href="login.php">Sign in</a>';
+              }
+              ?></p>
             </div>
 
           </div>
@@ -152,6 +164,22 @@ $conn->close();
     <script src="../assets/js/plugins/slick.min.js"></script>
     <script src="../assets/js/plugins/interactjs.min.js"></script>
     <script src="../assets/js/material-kit.js?v=3.0.4"></script>
+    <script>
+      function validateForm() {
+        var password = document.getElementById('exampleInputPassword1').value;
+
+        // Validasi panjang password dan karakter khusus
+        var passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&*]{8,}$/;
+        if (!passwordRegex.test(password)) {
+          alert('Password harus minimal 8 karakter, mengandung setidaknya 1 huruf kecil, 1 huruf besar, dan 1 simbol.');
+          return false;
+        }
+
+        return true;
+      }
+    </script>
+
+
     </body>
 
 </html>

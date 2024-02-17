@@ -7,6 +7,8 @@ $username = 'root';
 $password = '';
 $database = 'bimbel';
 
+$err = "";
+
 // Membuat koneksi ke database dengan PDO
 try {
   $conn = new PDO("mysql:host=$host;dbname=$database", $username, $password);
@@ -19,6 +21,20 @@ try {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $email = htmlspecialchars($_POST['email'], ENT_QUOTES, 'UTF-8');
   $password = htmlspecialchars($_POST['password'], ENT_QUOTES, 'UTF-8');
+
+  // Validasi reCAPTCHA
+  $recaptchaSecretKey = '6LchCnYpAAAAADuUWzCWQbIuLzGLj9b8ZdflfLHO';
+  $recaptchaResponse = $_POST['g-recaptcha-response'];
+  $recaptchaVerifyUrl = "https://www.google.com/recaptcha/api/siteverify?secret=$recaptchaSecretKey&response=$recaptchaResponse";
+
+  $recaptchaVerify = json_decode(file_get_contents($recaptchaVerifyUrl));
+
+  if (!$recaptchaVerify->success) {
+    $err .= "<li>Verifikasi reCAPTCHA gagal.</li>";
+    $_SESSION['login_message'] = 'Verifikasi reCAPTCHA gagal. Silakan coba lagi.';
+    header('Location: login.php'); // Ganti dengan halaman login yang sesuai
+    exit();
+  }
 
   try {
     // Menggunakan prepared statement untuk query ke database
@@ -34,17 +50,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       $hashedPassword = $result['password'];
 
       if (password_verify($password, $hashedPassword)) {
-        // Password benar, set session email dan role
-        $_SESSION['session_email'] = $result['email'];
-        $_SESSION['role'] = $result['role'];
+        // Periksa apakah akun sudah terverifikasi
+        if ($result['status'] == 'verified') {
+          // Password benar, set session email dan role
+          $_SESSION['session_email'] = $result['email'];
+          $_SESSION['role'] = $result['role'];
 
-        // Redirect ke homepage.php sesuai role
-        if ($_SESSION['role'] == 'admin') {
-          header('Location: dashboard.php');
-        } elseif ($_SESSION['role'] == 'user') {
-          header('Location: homepage.php');
+          // Redirect ke homepage.php sesuai role
+          if ($_SESSION['role'] == 'admin') {
+            header('Location: dashboard.php');
+          } elseif ($_SESSION['role'] == 'user') {
+            header('Location: homepage.php');
+          }
+          exit();
+        } else {
+          $_SESSION['login_message'] = 'Login gagal. Akun belum terverifikasi.';
         }
-        exit();
       } else {
         $_SESSION['login_message'] = 'Login gagal. Periksa kembali email dan password Anda.';
       }
@@ -59,6 +80,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 // Menutup koneksi
 $conn = null;
 ?>
+
 
 
 
@@ -88,6 +110,7 @@ $conn = null;
   <!-- Nepcha is a easy-to-use web analytics. No cookies and fully compliant with GDPR, CCPA and PECR. -->
   <!-- <script defer data-site="YOUR_DOMAIN_HERE" src="https://api.nepcha.com/js/nepcha-analytics.js"></script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script> -->
+  <script src="https://www.google.com/recaptcha/api.js"></script>
 </head>
 <div class="page-header align-items-start min-vh-100" style="background-image: url('https://images.unsplash.com/photo-1497294815431-9365093b7331?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1950&q=80');" loading="lazy">
   <span class="mask bg-gradient-dark opacity-6"></span>
@@ -101,19 +124,30 @@ $conn = null;
               <div class="row mt-3">
                 <div class="col-2 text-center ms-auto">
                   <a class="btn btn-link px-3" href="javascript:;">
-
                   </a>
                 </div>
-
                 <div class="col-2 text-center me-auto">
                   <a class="btn btn-link px-3" href="javascript:;">
-
                   </a>
                 </div>
               </div>
             </div>
           </div>
           <div class="card-body">
+            <?php if (isset($_SESSION['login_message'])) : ?>
+              <div class="alert alert-danger" role="alert">
+                <?php
+                echo htmlspecialchars($_SESSION['login_message'], ENT_QUOTES, 'UTF-8');
+
+                // Tambahkan tautan jika pesan adalah 'Akun belum terverifikasi'
+                if ($_SESSION['login_message'] == 'Login gagal. Akun belum terverifikasi.') {
+                  echo ' Silakan verifikasi akun Anda <a href="verification.php">di sini</a>.';
+                }
+
+                unset($_SESSION['login_message']); // Hapus pesan agar tidak tampil lagi
+                ?>
+              </div>
+            <?php endif; ?>
             <form role="form" class="text-start" method="post">
               <div class="input-group input-group-outline my-3">
                 <label class="form-label">Email</label>
@@ -130,6 +164,7 @@ $conn = null;
               <div class="text-center">
                 <button type="submit" class="btn bg-gradient-primary w-100 my-4 mb-2">Sign in</button>
               </div>
+              <div class="g-recaptcha" data-sitekey="6LchCnYpAAAAAOjZpne5kpBpwU_gxvkKgweAn4Fu"></div>
             </form>
 
             <p class="mt-4 text-sm text-center">

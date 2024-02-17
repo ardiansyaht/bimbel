@@ -37,11 +37,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Jika email ada, ganti tampilan ke input password
         $showPasswordInput = true;
     } else {
-        // Jika email tidak ada, kirim instruksi reset password (biasanya melibatkan pengiriman email)
-        // ...
-
-        // Tampilkan pesan bahwa instruksi reset password telah dikirim
-        $resetMessage = 'Instruksi reset password telah berhasil dikirim.';
     }
 }
 

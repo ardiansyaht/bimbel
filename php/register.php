@@ -2,59 +2,123 @@
 session_start();
 header("X-Frame-Options: DENY");
 
-$host = 'localhost';
-$username = 'root';
-$password = '';
-$database = 'bimbel';
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
-// Membuat koneksi ke database
-$conn = new mysqli($host, $username, $password, $database);
+require '../vendor/autoload.php';
 
-// Memeriksa koneksi
-if ($conn->connect_error) {
-  die("Koneksi ke database gagal: " . $conn->connect_error);
+function connectToDatabase()
+{
+  $host = 'localhost';
+  $username = 'root';
+  $password = '';
+  $database = 'bimbel';
+
+  try {
+    $conn = new PDO("mysql:host=$host;dbname=$database", $username, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    return $conn;
+  } catch (PDOException $e) {
+    die("Koneksi ke database gagal: " . $e->getMessage());
+  }
 }
 
-// Menangani data dari formulir
+function generateOTP()
+{
+  return strval(rand(100000, 999999));
+}
+
+function sendOTPByEmail($to, $otp_code)
+{
+  $mail = new PHPMailer(true);
+
+  try {
+    $mail->isSMTP();
+    $mail->Host = 'smtp.gmail.com';
+    $mail->SMTPAuth = true;
+    $mail->Username = 'mccalister2306@gmail.com'; // Ganti dengan email Anda
+    $mail->Password = 'zjcijgwvhntdeekm'; // Ganti dengan password email Anda
+    $mail->SMTPSecure = 'tls';
+    $mail->Port = 587;
+
+    $mail->setFrom('mccalister2306@gmail.com', 'CodinginAJA'); // Ganti dengan email dan nama Anda
+    $mail->addAddress($to);
+    $mail->Subject = 'Kode Verifikasi';
+    $mail->Body = "Kode verifikasi Anda: $otp_code";
+
+    $mail->send();
+  } catch (Exception $e) {
+    // Tangani kesalahan pengiriman email
+    echo 'Gagal mengirim email verifikasi. Pesan error: ' . $mail->ErrorInfo;
+  }
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  $conn = connectToDatabase();
+
   $username = $_POST['username'];
   $name = $_POST['name'];
   $email = $_POST['email'];
   $password = $_POST['password'];
 
-  // Validasi apakah username sudah digunakan
-  $checkUsernameQuery = "SELECT * FROM tb_login WHERE username = '$username'";
-  $checkUsernameResult = $conn->query($checkUsernameQuery);
+  // Gunakan parameterized query untuk mencegah SQL injection
+  $checkUsernameQuery = "SELECT * FROM tb_login WHERE username = :username";
+  $checkEmailQuery = "SELECT * FROM tb_login WHERE email = :email";
 
-  // Validasi apakah email sudah digunakan
-  $checkEmailQuery = "SELECT * FROM tb_login WHERE email = '$email'";
-  $checkEmailResult = $conn->query($checkEmailQuery);
+  $stmtUsername = $conn->prepare($checkUsernameQuery);
+  $stmtUsername->bindParam(':username', $username);
+  $stmtUsername->execute();
+  $checkUsernameResult = $stmtUsername->fetch(PDO::FETCH_ASSOC);
 
-  if ($checkUsernameResult->num_rows > 0) {
+  $stmtEmail = $conn->prepare($checkEmailQuery);
+  $stmtEmail->bindParam(':email', $email);
+  $stmtEmail->execute();
+  $checkEmailResult = $stmtEmail->fetch(PDO::FETCH_ASSOC);
+
+  if ($checkUsernameResult) {
     $_SESSION['register_message'] = 'Username sudah digunakan. Silakan gunakan yang lain.';
-  } elseif ($checkEmailResult->num_rows > 0) {
+  } elseif ($checkEmailResult) {
     $_SESSION['register_message'] = 'Email sudah digunakan. Silakan gunakan yang lain.';
   } else {
-    // Enkripsi password menggunakan bcrypt
     $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+    $otp_code = generateOTP();
 
-    // Menyimpan data pengguna ke database
-    $query = "INSERT INTO tb_login (username, name, email, password, role) VALUES ('$username', '$name', '$email', '$hashedPassword', 'user')";
+    // Simpan data pengguna ke database menggunakan parameterized query
+    $query = "INSERT INTO tb_login (username, name, email, password, role, otp_code) VALUES (:username, :name, :email, :password, 'user', :otp_code)";
 
-    // Eksekusi query
-    if ($conn->query($query) === TRUE) {
-      $_SESSION['register_message'] = 'Registrasi berhasil. Silakan login.';
-      header("Location: login.php");
-      exit();
-    } else {
+    $stmtInsert = $conn->prepare($query);
+    $stmtInsert->bindParam(':username', $username);
+    $stmtInsert->bindParam(':name', $name);
+    $stmtInsert->bindParam(':email', $email);
+    $stmtInsert->bindParam(':password', $hashedPassword);
+    $stmtInsert->bindParam(':otp_code', $otp_code);
+
+    try {
+      $conn->beginTransaction();
+      $stmtInsert->execute();
+      $conn->commit();
+
+      sendOTPByEmail($email, $otp_code);
+
+      $_SESSION['register_message'] = 'Registrasi berhasil. Silakan cek email Anda untuk kode verifikasi.';
+      // Pindah ke verification.php setelah 2 detik
+      echo "<script>
+                setTimeout(function () {
+                    window.location.href = 'verification.php';
+                }, 2000);
+            </script>";
+    } catch (PDOException $e) {
+      // Rollback jika terjadi kesalahan
+      $conn->rollBack();
       $_SESSION['register_message'] = 'Registrasi gagal.';
     }
   }
-}
 
-// Menutup koneksi
-$conn->close();
+  $conn = null; // Tutup koneksi database
+}
 ?>
+
+
 
 
 
@@ -96,10 +160,26 @@ $conn->close();
 
 </head>
 <div class="page-header align-items-start min-vh-100" style="background-image: url('https://images.unsplash.com/photo-1497294815431-9365093b7331?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1950&q=80');" loading="lazy">
+  <span class="mask bg-gradient-dark opacity-6"></span>
   <div class="container my-auto">
     <div class="row">
       <div class="col-lg-4 col-md-8 col-12 mx-auto">
         <div class="card z-index-0 fadeIn3 fadeInBottom">
+          <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+            <div class="bg-gradient-primary shadow-primary border-radius-lg py-3 pe-1">
+              <h4 class="text-white font-weight-bolder text-center mt-2 mb-0">Register</h4>
+              <div class="row mt-3">
+                <div class="col-2 text-center ms-auto">
+                  <a class="btn btn-link px-3" href="javascript:;">
+                  </a>
+                </div>
+                <div class="col-2 text-center me-auto">
+                  <a class="btn btn-link px-3" href="javascript:;">
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="card-body">
             <form role="form" class="text-start" method="post" action="register.php" onsubmit="return validateForm();">
               <div class="mb-3">
